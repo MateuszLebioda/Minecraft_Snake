@@ -8,45 +8,53 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class GamePanel extends JPanel implements KeyListener, ActionListener {
 
-    public  GamePanel(){
+    private Random random = new Random();
+
+    private GroundPowder groundPowder = new GroundPowder();
+    GamePanel(){
         addKeyListener(this);
         setFocusable(true);
         setFocusTraversalKeysEnabled(false);
         timer = new Timer(time, this);
         timer.start();
         initCreeper();
+        rollGroundPowder();
     }
 
-    Timer timer;
+    private Timer timer;
 
-    static final int RIGHT = 0;
-    static final int LEFT = 1;
-    static final int UP = 2;
-    static final int DOWN = 3;
+    private static final int RIGHT = 0;
+    private static final int LEFT = 1;
+    private static final int UP = 2;
+    private static final int DOWN = 3;
 
-    int moves = 0;
+    private int moves = 0;
 
-    int side;
-
-    private int x[] = new int [] {24,73,122,171,220,269,318,367,416,465,514,563,612,661,710,759};
-    private int y[] = new int [] {24,73,122,171,220,269,318,367,416,465,514,563,612,661,710,759};
+    private int side;
 
     private int CreeperLength = 3;
     private List<Creeper> creeperBody = new ArrayList<>();
 
 
-    int time = 100;
+    private int time = 100;
 
     private ImageIcon area;
+    private ImageIcon border;
+    private ImageIcon groundPowderIcon;
 
     public void paint(Graphics g) {
 
         /*Paint background*/
+        //this.setSize(768,768);
+
         area = new ImageIcon("resources/Background.png");
-        area.paintIcon(this, g, 24, 24);
+        area.paintIcon(this, g, 0, 0);
+        border = new ImageIcon("resources/border.png");
+        border.paintIcon(this,g,0,0);
 
 
         for (int i = 0; i < CreeperLength; i++) {
@@ -84,7 +92,7 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
                                 break;
                             }
                             case GamePanel.UP: {
-                                setIcon(i, g, "resources/SnakeBodyLeftDown.png");
+                                setIcon(i, g, "resources/SnakeBodyLeftUp.png");
                                 break;
                             }
                         }
@@ -147,6 +155,14 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
                 //g.dispose();
             }
         }
+        groundPowderIcon = new ImageIcon("resources/GroundPowder.png");
+        if(creeperBody.get(0).x == groundPowder.x && creeperBody.get(0).y == groundPowder.y){
+            creeperBody.add(new Creeper());
+            CreeperLength++;
+            rollGroundPowder();
+        }
+        groundPowderIcon.paintIcon(this,g,groundPowder.x,groundPowder.y);
+
     }
 
 
@@ -157,16 +173,16 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
         }
         side = GamePanel.RIGHT;
 
-        creeperBody.get(0).x = 121;
-        creeperBody.get(0).y = 120;
+        creeperBody.get(0).x = 48*3;
+        creeperBody.get(0).y = 48*2;
         creeperBody.get(0).side = GamePanel.RIGHT;
 
-        creeperBody.get(1).x = 73;
-        creeperBody.get(1).y = 120;
+        creeperBody.get(1).x = 48*2;
+        creeperBody.get(1).y = 48*2;
         creeperBody.get(1).side = GamePanel.RIGHT;
 
-        creeperBody.get(2).y = 120;
-        creeperBody.get(2).x = 25;
+        creeperBody.get(2).y = 48*2;
+        creeperBody.get(2).x = 48;
         creeperBody.get(2).side = GamePanel.RIGHT;
     }
     void setIcon(int i,Graphics g,String way){
@@ -244,23 +260,25 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
     public void keyPressed(KeyEvent e) {
         switch(e.getKeyCode()){
             case KeyEvent.VK_RIGHT:{
-                if(side != GamePanel.LEFT) {
+                if(creeperBody.get(0).side != GamePanel.LEFT) {
                     moves++;
                     side = GamePanel.RIGHT;
                 }break;
             }case KeyEvent.VK_LEFT:{
-                if(side != GamePanel.RIGHT){
+                if(creeperBody.get(0).side != GamePanel.RIGHT){
                     moves++;
                     side = GamePanel.LEFT;
                 }break;
             }case KeyEvent.VK_UP:{
-                moves++;
-                side = GamePanel.UP;
-                break;
+                if(creeperBody.get(0).side != GamePanel.DOWN) {
+                    moves++;
+                    side = GamePanel.UP;
+                }break;
             }case KeyEvent.VK_DOWN:{
-                moves++;
-                side = GamePanel.DOWN;
-                break;
+                if(creeperBody.get(0).side != GamePanel.UP) {
+                    moves++;
+                    side = GamePanel.DOWN;
+                }break;
             }
         }
     }
@@ -268,5 +286,18 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
     @Override
     public void keyReleased(KeyEvent e) {
 
+    }
+
+    private void rollGroundPowder(){
+        groundPowder.x = (random.nextInt(13)+1)*48;
+        groundPowder.y = (random.nextInt(13)+1)*48;
+
+        for(int i = 0; i < CreeperLength ; i++){
+            if(creeperBody.get(i).x == groundPowder.x && groundPowder.y == creeperBody.get(i).y){
+                groundPowder.x = (random.nextInt(13)+1)*48;
+                groundPowder.y = (random.nextInt(13)+1)*48;
+                i = 0;
+            }
+        }
     }
 }
