@@ -1,11 +1,14 @@
 package com.MateuszLebioda;
 
+import javafx.scene.media.AudioClip;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -14,8 +17,16 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
 
     private Random random = new Random();
 
+    AudioClip creeper1;
+    AudioClip creeper2;
+    AudioClip music;
+    AudioClip boom1;
+    AudioClip boom2;
+
     private GroundPowder groundPowder = new GroundPowder();
     GamePanel(){
+        initMMiusic();
+        music.play();
         addKeyListener(this);
         setFocusable(true);
         setFocusTraversalKeysEnabled(false);
@@ -24,6 +35,7 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
         initCreeper();
         rollGroundPowder();
     }
+
 
     private Timer timer;
 
@@ -40,7 +52,7 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
     private List<Creeper> creeperBody = new ArrayList<>();
 
 
-    private int time = 100;
+    private int time = 125;
 
     private ImageIcon area;
     private ImageIcon border;
@@ -157,6 +169,11 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
         }
         groundPowderIcon = new ImageIcon("resources/GroundPowder.png");
         if(creeperBody.get(0).x == groundPowder.x && creeperBody.get(0).y == groundPowder.y){
+            if(random.nextBoolean()){
+                creeper1.play();
+            }else{
+                creeper2.play();
+            }
             creeperBody.add(new Creeper());
             CreeperLength++;
             rollGroundPowder();
@@ -193,6 +210,9 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         timer.start();
+        if(!music.isPlaying()){
+            music.play();
+        }
         if(side == GamePanel.RIGHT){
             for(int i = CreeperLength-1; i>0;i--){
                 creeperBody.get(i).y = creeperBody.get(i-1).y;
@@ -204,11 +224,7 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
                 }else {
                     creeperBody.get(i).x = creeperBody.get(i-1).x;
                 }
-                /*if(creeperBody.get(i).x>750){
-                    creeperBody.get(i).x = 24;
-                }*/
             }
-            repaint();
         }if(side == GamePanel.LEFT){
             for(int i = CreeperLength-1; i>0;i--){
                 creeperBody.get(i).y = creeperBody.get(i-1).y;
@@ -221,7 +237,6 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
                     creeperBody.get(i).x = creeperBody.get(i-1).x;
                 }
             }
-            repaint();
         }if(side == GamePanel.DOWN){
             for(int i = CreeperLength-1; i>0;i--){
                 creeperBody.get(i).x = creeperBody.get(i-1).x;
@@ -234,22 +249,42 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
                     creeperBody.get(i).y = creeperBody.get(i-1).y;
                 }
             }
-            repaint();
         }if(side == GamePanel.UP){
             for(int i = CreeperLength-1; i>0;i--){
                 creeperBody.get(i).x = creeperBody.get(i-1).x;
                 creeperBody.get(i).side=creeperBody.get(i-1).side;
 
-            }for(int i = CreeperLength-1;i>=0;i--){
-                if(i==0){
+            }for(int i = CreeperLength-1;i>=0;i--) {
+                if (i == 0) {
                     creeperBody.get(i).y -= 48;
-                }else {
-                    creeperBody.get(i).y = creeperBody.get(i-1).y;
+                } else {
+                    creeperBody.get(i).y = creeperBody.get(i - 1).y;
                 }
             }
-            repaint();
+        }if(creeperBody.get(0).y<48||creeperBody.get(0).y>680||creeperBody.get(0).x<48||creeperBody.get(0).x>680){
+            timer.stop();
+            if(creeperBody.get(0).y<48) creeperBody.get(0).y += 48;
+            else if(creeperBody.get(0).y>680) creeperBody.get(0).y -= 48;
+            else if(creeperBody.get(0).x<48) creeperBody.get(0).x += 48;
+            else if(creeperBody.get(0).x>48) creeperBody.get(0).x -= 48;
+                if(random.nextBoolean()){
+                    boom1.play();
+                }else{
+                    boom2.play();
+                }
+        }for(int x = 1;x < CreeperLength; x++){
+            if(creeperBody.get(x).x==creeperBody.get(0).x && creeperBody.get(x).y==creeperBody.get(0).y){
+                timer.stop();
+                if(random.nextBoolean()){
+                    boom1.play();
+                }else{
+                    boom2.play();
+                }
+            }
         }
+        repaint();
     }
+
 
     @Override
     public void keyTyped(KeyEvent e) {
@@ -300,4 +335,21 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
             }
         }
     }
+
+    public void initMMiusic(){
+        File file = new File("resources/Creeper1.mp3");
+        File file2 = new File("resources/Creeper2.mp3");
+        File file3 = new File("resources/miusic.mp3");
+        File file4 = new File("resources/boom2.mp3");
+        File file5 = new File("resources/boom1.mp3");
+
+
+        creeper1 = new AudioClip(file.toURI().toString());
+        creeper2 = new AudioClip(file2.toURI().toString());
+        music = new AudioClip(file3.toURI().toString());
+        boom1 = new AudioClip(file4.toURI().toString());
+        boom2 = new AudioClip(file5.toURI().toString());
+
+    }
+
 }
