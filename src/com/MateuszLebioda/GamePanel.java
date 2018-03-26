@@ -8,7 +8,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.io.File;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -17,22 +17,44 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
 
     private Random random = new Random();
 
-    AudioClip creeper1;
-    AudioClip creeper2;
-    AudioClip music;
-    AudioClip boom1;
-    AudioClip boom2;
+    private AudioClip creeper1;
+    private AudioClip creeper2;
+    private AudioClip music;
+    private AudioClip boom1;
+    private AudioClip boom2;
 
-    private GroundPowder groundPowder = new GroundPowder();
+    JButton respawnButton = new JButton();
+
+    boolean menu;
+    boolean lose;
+
+    private GroundPowder groundPowder;
+
     GamePanel(){
-        initMMiusic();
-        music.play();
+        respawnButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                lose = false;
+                creeperBody = initCreeper();
+                repaint();
+                timer.start();
+                respawnButton.setFocusable(false);
+                respawnButton.setVisible(false);
+            }
+        });
+
+        groundPowder  = new GroundPowder();
+        menu = true;
+        lose = false;
+
+        respawnButton.setVisible(false);
+        initMusic();
         addKeyListener(this);
         setFocusable(true);
-        setFocusTraversalKeysEnabled(false);
         timer = new Timer(time, this);
         timer.start();
-        initCreeper();
+
+        creeperBody = initCreeper();
         rollGroundPowder();
     }
 
@@ -48,44 +70,36 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
 
     private int side;
 
-    private int CreeperLength = 3;
-    private List<Creeper> creeperBody = new ArrayList<>();
-
+    private List<Creeper> creeperBody;
 
     private int time = 125;
 
-    private ImageIcon area;
-    private ImageIcon border;
-    private ImageIcon groundPowderIcon;
+
 
     public void paint(Graphics g) {
 
-        /*Paint background*/
-        //this.setSize(768,768);
-
-        area = new ImageIcon("resources/Background.png");
+        ImageIcon area = new ImageIcon(getClass().getResource("/resources/Background.png"));
         area.paintIcon(this, g, 0, 0);
-        border = new ImageIcon("resources/border.png");
+        ImageIcon border = new ImageIcon(getClass().getResource("/resources/border.png"));
         border.paintIcon(this,g,0,0);
 
-
-        for (int i = 0; i < CreeperLength; i++) {
+        for (int i = 0; i < creeperBody.size(); i++) {
             if (i == 0) {
                 switch (side) {
                     case GamePanel.RIGHT: {
-                        setIcon(i, g, "resources/CreeperHeadRigth.png");
+                        setIcon(i, g, "/resources/CreeperHeadRigth.png");
                         break;
                     }
                     case GamePanel.LEFT: {
-                        setIcon(i, g, "resources/CreeperHeadLeft.png");
+                        setIcon(i, g, "/resources/CreeperHeadLeft.png");
                         break;
                     }
                     case GamePanel.UP: {
-                        setIcon(i, g, "resources/CreeperHeadUp.png");
+                        setIcon(i, g, "/resources/CreeperHeadUp.png");
                         break;
                     }
                     case GamePanel.DOWN: {
-                        setIcon(i, g, "resources/CreeperHeadDown.png");
+                        setIcon(i, g, "/resources/CreeperHeadDown.png");
                         break;
                     }
                 }
@@ -96,15 +110,15 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
                         switch (creeperBody.get(i - 1).side) {
                             case GamePanel.LEFT:
                             case GamePanel.RIGHT: {
-                                setIcon(i, g, "resources/SnakeBodyHorizontal.png");
+                                setIcon(i, g, "/resources/SnakeBodyHorizontal.png");
                                 break;
                             }
                             case GamePanel.DOWN: {
-                                setIcon(i, g, "resources/SnakeBodyLeftDown.png");
+                                setIcon(i, g, "/resources/SnakeBodyLeftDown.png");
                                 break;
                             }
                             case GamePanel.UP: {
-                                setIcon(i, g, "resources/SnakeBodyLeftUp.png");
+                                setIcon(i, g, "/resources/SnakeBodyLeftUp.png");
                                 break;
                             }
                         }
@@ -114,15 +128,15 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
                         switch (creeperBody.get(i - 1).side) {
                             case GamePanel.RIGHT:
                             case GamePanel.LEFT: {
-                                setIcon(i, g, "resources/SnakeBodyHorizontal.png");
+                                setIcon(i, g, "/resources/SnakeBodyHorizontal.png");
                                 break;
                             }
                             case GamePanel.DOWN: {
-                                setIcon(i, g, "resources/SnakeBodyRightDown.png");
+                                setIcon(i, g, "/resources/SnakeBodyRightDown.png");
                                 break;
                             }
                             case GamePanel.UP: {
-                                setIcon(i, g, "resources/SnakeBodyRightUp.png");
+                                setIcon(i, g, "/resources/SnakeBodyRightUp.png");
                                 break;
                             }
                         }
@@ -132,15 +146,15 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
                         switch (creeperBody.get(i - 1).side) {
                             case GamePanel.UP:
                             case GamePanel.DOWN: {
-                                setIcon(i, g, "resources/SnakeBodyVertical.png");
+                                setIcon(i, g, "/resources/SnakeBodyVertical.png");
                                 break;
                             }
                             case GamePanel.LEFT: {
-                                setIcon(i, g, "resources/SnakeBodyLeftDown.png");
+                                setIcon(i, g, "/resources/SnakeBodyLeftDown.png");
                                 break;
                             }
                             case GamePanel.RIGHT: {
-                                setIcon(i, g, "resources/SnakeBodyRightDown.png");
+                                setIcon(i, g, "/resources/SnakeBodyRightDown.png");
                                 break;
                             }
                         }
@@ -149,25 +163,24 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
                         switch (creeperBody.get(i - 1).side) {
                             case GamePanel.DOWN:
                             case GamePanel.UP: {
-                                setIcon(i, g, "resources/SnakeBodyVertical.png");
+                                setIcon(i, g, "/resources/SnakeBodyVertical.png");
                                 break;
                             }
                             case GamePanel.LEFT: {
-                                setIcon(i, g, "resources/SnakeBodyLeftUp.png");
+                                setIcon(i, g, "/resources/SnakeBodyLeftUp.png");
                                 break;
                             }
                             case GamePanel.RIGHT: {
-                                setIcon(i, g, "resources/SnakeBodyRightUp.png");
+                                setIcon(i, g, "/resources/SnakeBodyRightUp.png");
                                 break;
                             }
                         }
                         break;
                     }
                 }
-                //g.dispose();
             }
         }
-        groundPowderIcon = new ImageIcon("resources/GroundPowder.png");
+        ImageIcon groundPowderIcon = new ImageIcon(getClass().getResource("/resources/GroundPowder.png"));
         if(creeperBody.get(0).x == groundPowder.x && creeperBody.get(0).y == groundPowder.y){
             if(random.nextBoolean()){
                 creeper1.play();
@@ -175,35 +188,37 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
                 creeper2.play();
             }
             creeperBody.add(new Creeper());
-            CreeperLength++;
             rollGroundPowder();
         }
         groundPowderIcon.paintIcon(this,g,groundPowder.x,groundPowder.y);
+        if(lose) {
+            ImageIcon loseBackground = new ImageIcon(getClass().getResource("/resources/LoseBacground.png"));
+            loseBackground.paintIcon(this, g, 0, 0);
 
+            respawnButton.setBounds(150,420,470,50);
+            respawnButton.setIcon(new ImageIcon(getClass().getResource("/resources/respawnButton.png")));
+            this.add(respawnButton);
+            respawnButton.setVisible(true);
+        }
     }
 
 
 
-    void initCreeper(){
+    ArrayList<Creeper> initCreeper(){
+        ArrayList<Creeper> creeperBody = new ArrayList<>();
         for (int i = 0; i < 3; i++) {
             creeperBody.add(new Creeper());
+            creeperBody.get(i).y = 48*2;
+            creeperBody.get(i).x = 48*(3-i);
+            creeperBody.get(i).side = GamePanel.RIGHT;
         }
         side = GamePanel.RIGHT;
 
-        creeperBody.get(0).x = 48*3;
-        creeperBody.get(0).y = 48*2;
-        creeperBody.get(0).side = GamePanel.RIGHT;
-
-        creeperBody.get(1).x = 48*2;
-        creeperBody.get(1).y = 48*2;
-        creeperBody.get(1).side = GamePanel.RIGHT;
-
-        creeperBody.get(2).y = 48*2;
-        creeperBody.get(2).x = 48;
-        creeperBody.get(2).side = GamePanel.RIGHT;
+        return creeperBody;
     }
+
     void setIcon(int i,Graphics g,String way){
-        creeperBody.get(i).bodyIcon = new ImageIcon(way);
+        creeperBody.get(i).bodyIcon = new ImageIcon(getClass().getResource(way));
         creeperBody.get(i).bodyIcon.paintIcon(this,g,creeperBody.get(i).x,creeperBody.get(i).y);
     }
 
@@ -214,11 +229,11 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
             music.play();
         }
         if(side == GamePanel.RIGHT){
-            for(int i = CreeperLength-1; i>0;i--){
+            for(int i = creeperBody.size()-1; i>0;i--){
                 creeperBody.get(i).y = creeperBody.get(i-1).y;
                 creeperBody.get(i).side=creeperBody.get(i-1).side;
 
-            }for(int i = CreeperLength-1;i>=0;i--){
+            }for(int i = creeperBody.size()-1;i>=0;i--){
                 if(i==0){
                     creeperBody.get(i).x += 48;
                 }else {
@@ -226,11 +241,11 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
                 }
             }
         }if(side == GamePanel.LEFT){
-            for(int i = CreeperLength-1; i>0;i--){
+            for(int i = creeperBody.size()-1; i>0;i--){
                 creeperBody.get(i).y = creeperBody.get(i-1).y;
                 creeperBody.get(i).side=creeperBody.get(i-1).side;
 
-            }for(int i = CreeperLength-1;i>=0;i--){
+            }for(int i = creeperBody.size()-1;i>=0;i--){
                 if(i==0){
                     creeperBody.get(i).x -= 48;
                 }else {
@@ -238,11 +253,11 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
                 }
             }
         }if(side == GamePanel.DOWN){
-            for(int i = CreeperLength-1; i>0;i--){
+            for(int i = creeperBody.size()-1; i>0;i--){
                 creeperBody.get(i).x = creeperBody.get(i-1).x;
                 creeperBody.get(i).side=creeperBody.get(i-1).side;
 
-            }for(int i = CreeperLength-1;i>=0;i--){
+            }for(int i = creeperBody.size()-1;i>=0;i--){
                 if(i==0){
                     creeperBody.get(i).y += 48;
                 }else {
@@ -250,11 +265,11 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
                 }
             }
         }if(side == GamePanel.UP){
-            for(int i = CreeperLength-1; i>0;i--){
+            for(int i = creeperBody.size()-1; i>0;i--){
                 creeperBody.get(i).x = creeperBody.get(i-1).x;
                 creeperBody.get(i).side=creeperBody.get(i-1).side;
 
-            }for(int i = CreeperLength-1;i>=0;i--) {
+            }for(int i = creeperBody.size()-1;i>=0;i--) {
                 if (i == 0) {
                     creeperBody.get(i).y -= 48;
                 } else {
@@ -272,7 +287,10 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
                 }else{
                     boom2.play();
                 }
-        }for(int x = 1;x < CreeperLength; x++){
+            if(!lose){
+                repaint();
+            }lose=true;
+        }for(int x = 1;x < creeperBody.size(); x++){
             if(creeperBody.get(x).x==creeperBody.get(0).x && creeperBody.get(x).y==creeperBody.get(0).y){
                 timer.stop();
                 if(random.nextBoolean()){
@@ -280,9 +298,14 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
                 }else{
                     boom2.play();
                 }
+                if(!lose){
+                    repaint();
+                }lose=true;
             }
         }
-        repaint();
+        if(!lose) {
+            repaint();
+        }
     }
 
 
@@ -314,6 +337,15 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
                     moves++;
                     side = GamePanel.DOWN;
                 }break;
+            }case KeyEvent.VK_ENTER:{
+                if(lose){
+                    lose = false;
+                    creeperBody = initCreeper();
+                    repaint();
+                    timer.start();
+                    respawnButton.setFocusable(false);
+                    respawnButton.setVisible(false);
+                }
             }
         }
     }
@@ -327,7 +359,7 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
         groundPowder.x = (random.nextInt(13)+1)*48;
         groundPowder.y = (random.nextInt(13)+1)*48;
 
-        for(int i = 0; i < CreeperLength ; i++){
+        for(int i = 0; i < creeperBody.size() ; i++){
             if(creeperBody.get(i).x == groundPowder.x && groundPowder.y == creeperBody.get(i).y){
                 groundPowder.x = (random.nextInt(13)+1)*48;
                 groundPowder.y = (random.nextInt(13)+1)*48;
@@ -336,19 +368,18 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
         }
     }
 
-    public void initMMiusic(){
-        File file = new File("resources/Creeper1.mp3");
-        File file2 = new File("resources/Creeper2.mp3");
-        File file3 = new File("resources/miusic.mp3");
-        File file4 = new File("resources/boom2.mp3");
-        File file5 = new File("resources/boom1.mp3");
+    public void initMusic(){
+        try {
+            creeper1 = new AudioClip(getClass().getResource("/resources/Creeper1.mp3").toURI().toString());
+            creeper2 = new AudioClip(getClass().getResource("/resources/Creeper2.mp3").toURI().toString());
+            music = new AudioClip(getClass().getResource("/resources/miusic.mp3").toURI().toString());
+            boom1 = new AudioClip(getClass().getResource("/resources/Boom1.mp3").toURI().toString());
+            boom2 = new AudioClip(getClass().getResource("/resources/Boom2.mp3").toURI().toString());
+        } catch (URISyntaxException e) {
+            System.err.println("Dzwiek nie zostal prawidlowo wczytany.");
+        }
+        music.play();
 
-
-        creeper1 = new AudioClip(file.toURI().toString());
-        creeper2 = new AudioClip(file2.toURI().toString());
-        music = new AudioClip(file3.toURI().toString());
-        boom1 = new AudioClip(file4.toURI().toString());
-        boom2 = new AudioClip(file5.toURI().toString());
 
     }
 

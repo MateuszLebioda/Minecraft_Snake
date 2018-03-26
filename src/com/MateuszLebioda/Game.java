@@ -2,6 +2,7 @@ package com.MateuszLebioda;
 
 import javax.swing.*;
 
+
 public class Game {
 
 
@@ -15,5 +16,6 @@ public class Game {
         frame.add(gamePanel);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
+
     }
 }
