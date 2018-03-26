@@ -24,9 +24,13 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
     private AudioClip boom2;
 
     JButton respawnButton = new JButton();
+    JButton menuButton = new JButton();
+    JButton exitButton = new JButton();
 
     boolean menu;
     boolean lose;
+    boolean option=true;
+    boolean pause = false;
 
     private GroundPowder groundPowder;
 
@@ -34,12 +38,23 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
         respawnButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                lose = false;
-                creeperBody = initCreeper();
+                startNewGame();
+            }
+        });
+
+        menuButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                menu = true;
+                timer.stop();
                 repaint();
-                timer.start();
-                respawnButton.setFocusable(false);
-                respawnButton.setVisible(false);
+            }
+        });
+
+        exitButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.exit(0);
             }
         });
 
@@ -48,14 +63,12 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
         lose = false;
 
         respawnButton.setVisible(false);
+        exitButton.setVisible(false);
+        menuButton.setVisible(false);
         initMusic();
         addKeyListener(this);
         setFocusable(true);
         timer = new Timer(time, this);
-        timer.start();
-
-        creeperBody = initCreeper();
-        rollGroundPowder();
     }
 
 
@@ -77,128 +90,150 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
 
 
     public void paint(Graphics g) {
+        if(menu){
+            ImageIcon menuIcon = new ImageIcon(getClass().getResource("/resources/menu.png"));
+            menuIcon.paintIcon(this,g,0,0);
+        }else {
+            ImageIcon area = new ImageIcon(getClass().getResource("/resources/Background.png"));
+            area.paintIcon(this, g, 0, 0);
+            ImageIcon border = new ImageIcon(getClass().getResource("/resources/border.png"));
+            border.paintIcon(this, g, 0, 0);
 
-        ImageIcon area = new ImageIcon(getClass().getResource("/resources/Background.png"));
-        area.paintIcon(this, g, 0, 0);
-        ImageIcon border = new ImageIcon(getClass().getResource("/resources/border.png"));
-        border.paintIcon(this,g,0,0);
-
-        for (int i = 0; i < creeperBody.size(); i++) {
-            if (i == 0) {
-                switch (side) {
-                    case GamePanel.RIGHT: {
-                        setIcon(i, g, "/resources/CreeperHeadRigth.png");
-                        break;
-                    }
-                    case GamePanel.LEFT: {
-                        setIcon(i, g, "/resources/CreeperHeadLeft.png");
-                        break;
-                    }
-                    case GamePanel.UP: {
-                        setIcon(i, g, "/resources/CreeperHeadUp.png");
-                        break;
-                    }
-                    case GamePanel.DOWN: {
-                        setIcon(i, g, "/resources/CreeperHeadDown.png");
-                        break;
-                    }
-                }
-                creeperBody.get(i).side = side;
-            } else {
-                switch (creeperBody.get(i).side) {
-                    case GamePanel.RIGHT: {
-                        switch (creeperBody.get(i - 1).side) {
-                            case GamePanel.LEFT:
-                            case GamePanel.RIGHT: {
-                                setIcon(i, g, "/resources/SnakeBodyHorizontal.png");
-                                break;
-                            }
-                            case GamePanel.DOWN: {
-                                setIcon(i, g, "/resources/SnakeBodyLeftDown.png");
-                                break;
-                            }
-                            case GamePanel.UP: {
-                                setIcon(i, g, "/resources/SnakeBodyLeftUp.png");
-                                break;
-                            }
+            for (int i = 0; i < creeperBody.size(); i++) {
+                if (i == 0) {
+                    switch (side) {
+                        case GamePanel.RIGHT: {
+                            setIcon(i, g, "/resources/CreeperHeadRigth.png");
+                            break;
                         }
-                        break;
+                        case GamePanel.LEFT: {
+                            setIcon(i, g, "/resources/CreeperHeadLeft.png");
+                            break;
+                        }
+                        case GamePanel.UP: {
+                            setIcon(i, g, "/resources/CreeperHeadUp.png");
+                            break;
+                        }
+                        case GamePanel.DOWN: {
+                            setIcon(i, g, "/resources/CreeperHeadDown.png");
+                            break;
+                        }
                     }
-                    case GamePanel.LEFT: {
-                        switch (creeperBody.get(i - 1).side) {
-                            case GamePanel.RIGHT:
-                            case GamePanel.LEFT: {
-                                setIcon(i, g, "/resources/SnakeBodyHorizontal.png");
-                                break;
+                    creeperBody.get(i).side = side;
+                } else {
+                    switch (creeperBody.get(i).side) {
+                        case GamePanel.RIGHT: {
+                            switch (creeperBody.get(i - 1).side) {
+                                case GamePanel.LEFT:
+                                case GamePanel.RIGHT: {
+                                    setIcon(i, g, "/resources/SnakeBodyHorizontal.png");
+                                    break;
+                                }
+                                case GamePanel.DOWN: {
+                                    setIcon(i, g, "/resources/SnakeBodyLeftDown.png");
+                                    break;
+                                }
+                                case GamePanel.UP: {
+                                    setIcon(i, g, "/resources/SnakeBodyLeftUp.png");
+                                    break;
+                                }
                             }
-                            case GamePanel.DOWN: {
-                                setIcon(i, g, "/resources/SnakeBodyRightDown.png");
-                                break;
-                            }
-                            case GamePanel.UP: {
-                                setIcon(i, g, "/resources/SnakeBodyRightUp.png");
-                                break;
-                            }
+                            break;
                         }
-                        break;
-                    }
-                    case GamePanel.UP: {
-                        switch (creeperBody.get(i - 1).side) {
-                            case GamePanel.UP:
-                            case GamePanel.DOWN: {
-                                setIcon(i, g, "/resources/SnakeBodyVertical.png");
-                                break;
+                        case GamePanel.LEFT: {
+                            switch (creeperBody.get(i - 1).side) {
+                                case GamePanel.RIGHT:
+                                case GamePanel.LEFT: {
+                                    setIcon(i, g, "/resources/SnakeBodyHorizontal.png");
+                                    break;
+                                }
+                                case GamePanel.DOWN: {
+                                    setIcon(i, g, "/resources/SnakeBodyRightDown.png");
+                                    break;
+                                }
+                                case GamePanel.UP: {
+                                    setIcon(i, g, "/resources/SnakeBodyRightUp.png");
+                                    break;
+                                }
                             }
-                            case GamePanel.LEFT: {
-                                setIcon(i, g, "/resources/SnakeBodyLeftDown.png");
-                                break;
-                            }
-                            case GamePanel.RIGHT: {
-                                setIcon(i, g, "/resources/SnakeBodyRightDown.png");
-                                break;
-                            }
+                            break;
                         }
-                        break;
-                    }case GamePanel.DOWN: {
-                        switch (creeperBody.get(i - 1).side) {
-                            case GamePanel.DOWN:
-                            case GamePanel.UP: {
-                                setIcon(i, g, "/resources/SnakeBodyVertical.png");
-                                break;
+                        case GamePanel.UP: {
+                            switch (creeperBody.get(i - 1).side) {
+                                case GamePanel.UP:
+                                case GamePanel.DOWN: {
+                                    setIcon(i, g, "/resources/SnakeBodyVertical.png");
+                                    break;
+                                }
+                                case GamePanel.LEFT: {
+                                    setIcon(i, g, "/resources/SnakeBodyLeftDown.png");
+                                    break;
+                                }
+                                case GamePanel.RIGHT: {
+                                    setIcon(i, g, "/resources/SnakeBodyRightDown.png");
+                                    break;
+                                }
                             }
-                            case GamePanel.LEFT: {
-                                setIcon(i, g, "/resources/SnakeBodyLeftUp.png");
-                                break;
-                            }
-                            case GamePanel.RIGHT: {
-                                setIcon(i, g, "/resources/SnakeBodyRightUp.png");
-                                break;
-                            }
+                            break;
                         }
-                        break;
+                        case GamePanel.DOWN: {
+                            switch (creeperBody.get(i - 1).side) {
+                                case GamePanel.DOWN:
+                                case GamePanel.UP: {
+                                    setIcon(i, g, "/resources/SnakeBodyVertical.png");
+                                    break;
+                                }
+                                case GamePanel.LEFT: {
+                                    setIcon(i, g, "/resources/SnakeBodyLeftUp.png");
+                                    break;
+                                }
+                                case GamePanel.RIGHT: {
+                                    setIcon(i, g, "/resources/SnakeBodyRightUp.png");
+                                    break;
+                                }
+                            }
+                            break;
+                        }
                     }
                 }
             }
-        }
-        ImageIcon groundPowderIcon = new ImageIcon(getClass().getResource("/resources/GroundPowder.png"));
-        if(creeperBody.get(0).x == groundPowder.x && creeperBody.get(0).y == groundPowder.y){
-            if(random.nextBoolean()){
-                creeper1.play();
-            }else{
-                creeper2.play();
+            ImageIcon groundPowderIcon = new ImageIcon(getClass().getResource("/resources/GroundPowder.png"));
+            if (creeperBody.get(0).x == groundPowder.x && creeperBody.get(0).y == groundPowder.y) {
+                if (random.nextBoolean()) {
+                    creeper1.play();
+                } else {
+                    creeper2.play();
+                }
+                creeperBody.add(new Creeper());
+                rollGroundPowder();
             }
-            creeperBody.add(new Creeper());
-            rollGroundPowder();
-        }
-        groundPowderIcon.paintIcon(this,g,groundPowder.x,groundPowder.y);
-        if(lose) {
-            ImageIcon loseBackground = new ImageIcon(getClass().getResource("/resources/LoseBacground.png"));
-            loseBackground.paintIcon(this, g, 0, 0);
+            groundPowderIcon.paintIcon(this, g, groundPowder.x, groundPowder.y);
+            if (lose) {
+                ImageIcon loseBackground = new ImageIcon(getClass().getResource("/resources/LoseBacground.png"));
+                loseBackground.paintIcon(this, g, 0, 0);
 
-            respawnButton.setBounds(150,420,470,50);
-            respawnButton.setIcon(new ImageIcon(getClass().getResource("/resources/respawnButton.png")));
-            this.add(respawnButton);
-            respawnButton.setVisible(true);
+                respawnButton.setBounds(150, 420, 470, 50);
+                respawnButton.setIcon(new ImageIcon(getClass().getResource("/resources/respawnButton.png")));
+
+                menuButton.setBounds(150, 520, 470, 50);
+                menuButton.setIcon(new ImageIcon(getClass().getResource("/resources/titleMenuButton.png")));
+
+                exitButton.setBounds(150, 620, 470, 50);
+                exitButton.setIcon(new ImageIcon(getClass().getResource("/resources/exitButton.png")));
+
+                this.add(respawnButton);
+                respawnButton.setVisible(true);
+
+                this.add(menuButton);
+                menuButton.setVisible(true);
+
+                this.add(exitButton);
+                exitButton.setVisible(true);
+            }
+            ImageIcon pauseIcon = new ImageIcon(getClass().getResource("/resources/pause.png"));
+            if(pause){
+                pauseIcon.paintIcon(this,g,125,250);
+            }
         }
     }
 
@@ -308,43 +343,72 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
         }
     }
 
-
     @Override
     public void keyTyped(KeyEvent e) {
-
     }
 
     @Override
     public void keyPressed(KeyEvent e) {
-        switch(e.getKeyCode()){
-            case KeyEvent.VK_RIGHT:{
-                if(creeperBody.get(0).side != GamePanel.LEFT) {
-                    moves++;
-                    side = GamePanel.RIGHT;
-                }break;
-            }case KeyEvent.VK_LEFT:{
-                if(creeperBody.get(0).side != GamePanel.RIGHT){
-                    moves++;
-                    side = GamePanel.LEFT;
-                }break;
-            }case KeyEvent.VK_UP:{
-                if(creeperBody.get(0).side != GamePanel.DOWN) {
-                    moves++;
-                    side = GamePanel.UP;
-                }break;
-            }case KeyEvent.VK_DOWN:{
-                if(creeperBody.get(0).side != GamePanel.UP) {
-                    moves++;
-                    side = GamePanel.DOWN;
-                }break;
-            }case KeyEvent.VK_ENTER:{
-                if(lose){
-                    lose = false;
-                    creeperBody = initCreeper();
-                    repaint();
-                    timer.start();
-                    respawnButton.setFocusable(false);
-                    respawnButton.setVisible(false);
+        if(menu){
+            switch(e.getKeyCode()){
+                case KeyEvent.VK_DOWN:{
+                    option = false;
+                    break;
+                }case KeyEvent.VK_UP:{
+                    option = true;
+                    break;
+                }case KeyEvent.VK_ENTER:{
+                    if(option)startNewGame();
+                    else System.exit(0);
+                    break;
+                }
+            }
+        }else{
+            switch(e.getKeyCode()){
+                case KeyEvent.VK_RIGHT:{
+                    if(creeperBody.get(0).side != GamePanel.LEFT) {
+                        moves++;
+                        side = GamePanel.RIGHT;
+                    }break;
+                }case KeyEvent.VK_LEFT:{
+                    if(creeperBody.get(0).side != GamePanel.RIGHT){
+                        moves++;
+                        side = GamePanel.LEFT;
+                    }break;
+                }case KeyEvent.VK_UP:{
+                    if(creeperBody.get(0).side != GamePanel.DOWN) {
+                        moves++;
+                        side = GamePanel.UP;
+                    }break;
+                }case KeyEvent.VK_DOWN:{
+                    if(creeperBody.get(0).side != GamePanel.UP) {
+                        moves++;
+                        side = GamePanel.DOWN;
+                    }break;
+                }case KeyEvent.VK_ENTER:{
+                    if(lose){
+                        lose = false;
+                        creeperBody = initCreeper();
+                        repaint();
+                        timer.start();
+                        respawnButton.setFocusable(false);
+                        respawnButton.setVisible(false);
+                    }break;
+                }case KeyEvent.VK_ESCAPE:{
+                    if(lose){
+                        System.exit(0);
+                    }break;
+                }case  KeyEvent.VK_SPACE: {
+                    if(pause) {
+                        pause = false;
+                        timer.start();
+                    }
+                    else{
+                        pause = true;
+                        timer.stop();
+                        repaint();
+                    }
+                    break;
                 }
             }
         }
@@ -379,8 +443,19 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
             System.err.println("Dzwiek nie zostal prawidlowo wczytany.");
         }
         music.play();
+    }
+    private void startNewGame(){
+        lose = false;
+        menu = false;
+        creeperBody = initCreeper();
+        repaint();
+        timer.start();
+        respawnButton.setFocusable(false);
+        respawnButton.setVisible(false);
 
-
+        menuButton.setFocusable(false);
+        menuButton.setVisible(false);
+        rollGroundPowder();
     }
 
 }
