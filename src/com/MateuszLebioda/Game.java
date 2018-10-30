@@ -3,13 +3,10 @@ package com.MateuszLebioda;
 import javax.swing.*;
 
 
-public class Game {
-
-
-
-    Game() {
+class Game {
+        Game() {
         GamePanel gamePanel = new GamePanel();
-        JFrame frame = new JFrame("Snake II");
+        JFrame frame = new JFrame("Mateusz Lebioda");
 
         frame.setResizable(false);
         frame.setSize(784,806);
